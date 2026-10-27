@@ -1,0 +1,189 @@
+export type Faction = 'TUF' | 'MFF';
+export type Role = 'TANK' | 'SNIPER' | 'SUPPORT' | 'ASSAULT' | 'MISSILE' | 'STRIKER';
+
+export interface WeaponSlot {
+  weaponId: string;
+  socket: 'right' | 'left' | 'shoulder' | 'back';
+}
+
+export interface MechDefinition {
+  id: string;
+  name: string;
+  codename: string;
+  faction: Faction;
+  role: Role;
+  height: number; // meters
+  armor: number;
+  structure: number;
+  shield?: number;
+  speed: number; // m/s
+  sprintSpeed: number;
+  boostCost: number;
+  boostRecoveryDelay: number;
+  heatCapacity: number;
+  heatDissipation: number; // per second
+  staggerThreshold: number;
+  description: string;
+  colorPrimary: string;
+  colorSecondary: string;
+  abilities: string[]; // ability ids
+  weapons: WeaponSlot[];
+}
+
+export const MECHS: MechDefinition[] = [
+  {
+    id: 'tuf-01',
+    name: '壁垒',
+    codename: 'TUF-01 Rampart',
+    faction: 'TUF',
+    role: 'TANK',
+    height: 8.4,
+    armor: 2600,
+    structure: 1200,
+    shield: 800,
+    speed: 5.8,
+    sprintSpeed: 14,
+    boostCost: 35,
+    boostRecoveryDelay: 1.0,
+    heatCapacity: 100,
+    heatDissipation: 28,
+    staggerThreshold: 120,
+    description: '重型防御机，搭载塔盾与双管自动炮，背部双推进器提供短距突进。',
+    colorPrimary: '#e8e8e8',
+    colorSecondary: '#ff6b00',
+    abilities: ['tower-shield', 'taunt-barrier'],
+    weapons: [
+      { weaponId: 'autocannon-x2', socket: 'right' },
+      { weaponId: 'tower-shield', socket: 'left' }
+    ]
+  },
+  {
+    id: 'tuf-02',
+    name: '长矛',
+    codename: 'TUF-02 Lance',
+    faction: 'TUF',
+    role: 'SNIPER',
+    height: 7.6,
+    armor: 1800,
+    structure: 900,
+    speed: 7.2,
+    sprintSpeed: 18,
+    boostCost: 35,
+    boostRecoveryDelay: 1.0,
+    heatCapacity: 100,
+    heatDissipation: 30,
+    staggerThreshold: 90,
+    description: '中型狙击机，肩扛电磁轨道炮，部署稳定锚后可发射穿甲弹。',
+    colorPrimary: '#d6e4f0',
+    colorSecondary: '#2a7fff',
+    abilities: ['anchor', 'armor-piercing'],
+    weapons: [
+      { weaponId: 'railgun', socket: 'shoulder' },
+      { weaponId: 'anchor-claw', socket: 'left' }
+    ]
+  },
+  {
+    id: 'tuf-03',
+    name: '医师',
+    codename: 'TUF-03 Doc',
+    faction: 'TUF',
+    role: 'SUPPORT',
+    height: 7.2,
+    armor: 2000,
+    structure: 1000,
+    speed: 7.0,
+    sprintSpeed: 16,
+    boostCost: 32,
+    boostRecoveryDelay: 1.0,
+    heatCapacity: 100,
+    heatDissipation: 35,
+    staggerThreshold: 95,
+    description: '支援机，背部无人机舱可群体维修，光束可单体持续治疗。',
+    colorPrimary: '#eef6ee',
+    colorSecondary: '#2ecc71',
+    abilities: ['heal-beam', 'repair-drones'],
+    weapons: [
+      { weaponId: 'defense-cannon', socket: 'right' },
+      { weaponId: 'heal-beam', socket: 'left' }
+    ]
+  },
+  {
+    id: 'mff-01',
+    name: '幽魂',
+    codename: 'MFF-01 Wraith',
+    faction: 'MFF',
+    role: 'STRIKER',
+    height: 6.9,
+    armor: 1200,
+    structure: 700,
+    speed: 9.2,
+    sprintSpeed: 24,
+    boostCost: 28,
+    boostRecoveryDelay: 0.8,
+    heatCapacity: 100,
+    heatDissipation: 32,
+    staggerThreshold: 70,
+    description: '轻型突袭机，反关节腿+光学迷彩+二段冲刺，近战双刀爆发。',
+    colorPrimary: '#1a1a1a',
+    colorSecondary: '#ff1a1a',
+    abilities: ['optic-camo', 'double-dash'],
+    weapons: [
+      { weaponId: 'twin-blades', socket: 'right' },
+      { weaponId: 'smg-burst', socket: 'left' }
+    ]
+  },
+  {
+    id: 'mff-02',
+    name: '螳螂',
+    codename: 'MFF-02 Mantis',
+    faction: 'MFF',
+    role: 'MISSILE',
+    height: 7.4,
+    armor: 1900,
+    structure: 950,
+    speed: 7.4,
+    sprintSpeed: 17,
+    boostCost: 34,
+    boostRecoveryDelay: 1.0,
+    heatCapacity: 100,
+    heatDissipation: 26,
+    staggerThreshold: 100,
+    description: '导弹压制机，肩部导弹舱可锁定齐射，干扰弹可致盲雷达。',
+    colorPrimary: '#2b2b2b',
+    colorSecondary: '#c0392b',
+    abilities: ['missile-volley', 'chaff'],
+    weapons: [
+      { weaponId: 'missile-pod', socket: 'shoulder' },
+      { weaponId: 'shield-buckler', socket: 'left' }
+    ]
+  },
+  {
+    id: 'mff-03',
+    name: '熔核',
+    codename: 'MFF-03 Molten Core',
+    faction: 'MFF',
+    role: 'ASSAULT',
+    height: 8.2,
+    armor: 2400,
+    structure: 1100,
+    speed: 6.2,
+    sprintSpeed: 15,
+    boostCost: 36,
+    boostRecoveryDelay: 1.1,
+    heatCapacity: 120,
+    heatDissipation: 22,
+    staggerThreshold: 115,
+    description: '重型突击机，熔核炮高温熔穿，液压锤可处决硬直目标。',
+    colorPrimary: '#0f0f0f',
+    colorSecondary: '#ff3b00',
+    abilities: ['molten-cannon', 'hydraulic-hammer'],
+    weapons: [
+      { weaponId: 'molten-cannon', socket: 'right' },
+      { weaponId: 'hydro-hammer', socket: 'left' }
+    ]
+  }
+];
+
+export function getMech(id: string): MechDefinition | undefined {
+  return MECHS.find(m => m.id === id);
+}

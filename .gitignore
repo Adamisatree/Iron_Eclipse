@@ -1,0 +1,17 @@
+node_modules/
+dist/
+build/
+out/
+.DS_Store
+*.log
+.env
+.idea/
+.vscode/
+coverage/
+client/dist/
+server/dist/
+Unselected files/
+dist-installers/.tmp*
+electron/icon.png.base64
+build-installers.js
+build-installers2.js

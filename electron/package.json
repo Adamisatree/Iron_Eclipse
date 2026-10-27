@@ -1,0 +1,24 @@
+{
+  "name": "iron-eclipse",
+  "version": "0.9.0",
+  "description": "铁蚀战线 / Iron Eclipse — 重型机甲团队竞技",
+  "main": "main.js",
+  "author": "Iron Eclipse Team",
+  "license": "MIT",
+  "build": {
+    "appId": "com.ironeclipse.game",
+    "productName": "Iron Eclipse",
+    "directories": { "output": "../dist-installers" },
+    "files": [
+      "main.js",
+      "preload.js",
+      "../client/dist/**/*",
+      "../server/dist/**/*",
+      "../docs/**/*",
+      "../README.md"
+    ],
+    "win": { "target": ["nsis", "portable"], "arch": ["x64"], "icon": "icon.png" },
+    "mac": { "target": ["dmg", "zip"], "category": "public.app-category.games", "icon": "icon.png" },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true, "displayLanguageSelector": true }
+  }
+}
