@@ -2,12 +2,27 @@ import express from 'express';
 import cors from 'cors';
 import { WebSocketServer, WebSocket } from 'ws';
 import { createServer } from 'http';
+import dgram from 'dgram';
+import os from 'os';
 import { LobbyService, LobbyState } from './LobbyService.js';
 import { MatchDirector } from './MatchDirector.js';
 
 const GAME_PORT = parseInt(process.env.GAME_PORT || '27015');
-const DISCOVERY_PORT = 27016; // simulated via WS
+const DISCOVERY_PORT = parseInt(process.env.DISCOVERY_PORT || '27016');
 const CONTROL_PORT = 27017;
+
+// Host authority: whoever creates room is Host (server). LAN discovery via UDP broadcast.
+
+function getLocalIPs(): string[] {
+  const nets = os.networkInterfaces();
+  const ips: string[] = [];
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name] || []) {
+      if (net.family === 'IPv4' && !net.internal) ips.push(net.address);
+    }
+  }
+  return ips.length ? ips : ['127.0.0.1'];
+}
 
 const app = express();
 app.use(cors());
@@ -248,14 +263,94 @@ function relayToLobby(senderWs: WebSocket, msg:any){
 
 server.listen(GAME_PORT, '0.0.0.0', ()=>{
   console.log(`[Iron Eclipse] Server listening
-  Game UDP/WS  : ${GAME_PORT}
-  Discovery UDP: ${DISCOVERY_PORT} (via WS broadcast)
-  Control UDP  : ${CONTROL_PORT} (via WS)
+  Game WS/UDP  : ${GAME_PORT} (Host authority)
+  Discovery UDP: ${DISCOVERY_PORT} (broadcast 255.255.255.255 / LAN segment)
+  Control      : ${CONTROL_PORT}
   Health       : http://localhost:${GAME_PORT}/health
   Rooms        : http://localhost:${GAME_PORT}/rooms
+  Host IPs     : ${getLocalIPs().join(', ')}
   BuildHash    : d555555 Protocol 1.0.0
   `);
 });
 
-// Cleanup stale lobbies periodic
+// --- UDP LAN Discovery (true zero-config) ---
+const udp = dgram.createSocket({ type: 'udp4', reuseAddr: true });
+
+udp.on('message', (msg, rinfo) => {
+  try {
+    const data = JSON.parse(msg.toString());
+    if (data.type === 'DISCOVER_REQ') {
+      // Host replies with ROOM_ANNOUNCE for each lobby
+      for (const [, lobby] of lobbies) {
+        const announce = {
+          type: 'ROOM_ANNOUNCE',
+          room: {
+            roomId: lobby.service.state.roomId,
+            roomName: lobby.service.state.roomName,
+            hostIp: rinfo.address === '127.0.0.1' ? getLocalIPs()[0] : getLocalIPs()[0],
+            gamePort: GAME_PORT,
+            protocolVersion: '1.0.0',
+            buildHash: 'd555555',
+            currentPlayers: lobby.service.state.players.length,
+            maxPlayers: lobby.service.state.maxPlayers,
+            mapId: lobby.service.state.mapId,
+            modeId: lobby.service.state.modeId,
+            hasPassword: lobby.service.state.hasPassword,
+            hostName: lobby.service.state.players.find((p:any)=>p.isHost)?.name || 'Host',
+            lastSeen: Date.now()
+          }
+        };
+        const buf = Buffer.from(JSON.stringify(announce));
+        udp.send(buf, rinfo.port, rinfo.address);
+        // also broadcast to segment for other listeners
+        try { udp.send(buf, DISCOVERY_PORT, '255.255.255.255'); } catch {}
+      }
+      // If no lobbies, still respond with empty to confirm alive
+    } else if (data.type === 'ROOM_ANNOUNCE') {
+      // Client received announce via UDP, rebroadcast to WS clients for UI
+      const out = JSON.stringify(data);
+      wss.clients.forEach(c=> { if(c.readyState===1) c.send(out); });
+    }
+  } catch {}
+});
+
+udp.on('listening', () => {
+  try { udp.setBroadcast(true); } catch {}
+  const addr = udp.address() as any;
+  console.log(`[Discovery] UDP listening ${addr.address}:${addr.port} broadcast enabled`);
+  // Periodic broadcast of all lobbies to 255.255.255.255
+  setInterval(() => {
+    for (const [, lobby] of lobbies) {
+      const announce = {
+        type: 'ROOM_ANNOUNCE',
+        room: {
+          roomId: lobby.service.state.roomId,
+          roomName: lobby.service.state.roomName,
+          hostIp: getLocalIPs()[0],
+          gamePort: GAME_PORT,
+          protocolVersion: '1.0.0',
+          buildHash: 'd555555',
+          currentPlayers: lobby.service.state.players.length,
+          maxPlayers: lobby.service.state.maxPlayers,
+          mapId: lobby.service.state.mapId,
+          modeId: lobby.service.state.modeId,
+          hasPassword: lobby.service.state.hasPassword,
+          hostName: lobby.service.state.players.find((p:any)=>p.isHost)?.name || 'Host',
+          lastSeen: Date.now()
+        }
+      };
+      const buf = Buffer.from(JSON.stringify(announce));
+      try { udp.send(buf, DISCOVERY_PORT, '255.255.255.255'); } catch {}
+      // also per-interface broadcast
+      for (const ip of getLocalIPs()) {
+        const bcast = ip.split('.').slice(0,3).join('.') + '.255';
+        try { udp.send(buf, DISCOVERY_PORT, bcast); } catch {}
+      }
+    }
+  }, 2000);
+});
+
+try { udp.bind(DISCOVERY_PORT); } catch(e){ console.error('[Discovery] UDP bind failed', e); }
+
+// Cleanup stale lobbies periodic + WS broadcast
 setInterval(()=> broadcastRoomList(), 8000);

@@ -1,0 +1,7 @@
+{
+  "pkg": {
+    "assets": ["client/dist/**/*", "server/dist/**/*", "docs/**/*", "README.md"],
+    "targets": ["node18-win-x64"],
+    "outputPath": "dist-installers"
+  }
+}

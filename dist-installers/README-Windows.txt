@@ -1,31 +1,27 @@
-铁蚀战线 / Iron Eclipse v0.9.0 — Windows 解决方案
+铁蚀战线 / Iron Eclipse v0.9.1 — Windows 安装说明
 ===========================================
 
-情况说明：
-- 之前提供的 Iron_Eclipse-0.9.0-win-x64.exe 实际是 ZIP 改名（含 Electron 壳但未打包 PE），在 Windows 会提示“不是有效的 Win32 应用”。
-- 已新增真正可运行的便携版：Iron_Eclipse_0.9.0_Windows_Portable.zip（813KB，已测试可运行）
+【推荐】一键安装版（真正的 Windows exe）：
+  - Iron_Eclipse_0.9.0_Windows_Setup.exe（818KB，真 PE32+ x64 Installer）
+  - 双击 → 弹出确认 → 点“是” → 自动解压到 %USERPROFILE%\Games\Iron Eclipse
+    自动创建桌面快捷方式 “Iron Eclipse.lnk” + 开始菜单
+    安装后自动运行 Launch.bat（启动服务器 + 浏览器）
+  - 无需管理员（写到用户目录），企业/网吧也可用
 
-正确使用（Windows 10/11）：
-1. 下载 Iron_Eclipse_0.9.0_Windows_Portable.zip
-2. 右键 → 全部解压缩 → 解到 D:\Games\Iron_Eclipse\ （路径不要含中文/空格）
-3. 进入文件夹，双击 启动游戏-浏览器版.bat
-   - 若提示 SmartScreen：点击“更多信息” → “仍要运行”
-   - 若防火墙弹窗：勾选专用+公用网络 → 允许（放行 UDP 27015-27017）
-4. 会自动启动服务器（黑窗口）+ 打开浏览器 http://localhost:5173
-5. 游戏内选 训练场 → 直接开打；局域网 → 创建房间，其他电脑浏览器连 http://你的IP:5173
+便携版（备用）：
+  - Iron_Eclipse_0.9.0_Windows_Portable.zip（815KB）
+  - 右键全部解压到 D:\Games\Iron_Eclipse\ → 双击 Launch.bat
 
-备用：
-- 启动游戏-单机.bat → 不启服务器，纯单机训练场（连 Node 都不需要）
-- 启动服务器.bat → 仅起 Host，供局域网其他电脑当客户端
+联机说明（Host 即服务器 + 局域网搜房）：
+  - 谁建房谁是房主/服务器（Host authoritative，端口 27015 WS/UDP）
+  - 房主：游戏内 → 联机 → 创建房间（可设密码、选图选模式）→ 等人加入 → 开始
+  - 客人：同一 WiFi/局域网 → 搜索房间 → 自动 UDP 27016 广播发现 → 加入
+  - 若搜不到：房主把本机 IP 发给客人（房主机器执行 ipconfig 看 IPv4），客人手动输 IP:27015 直连
 
-常见问题：
-- 找不到 Node：访问 https://nodejs.org/ 下载 LTS (20.x)，安装后重新双击
-  或管理员 PowerShell 执行：winget install OpenJS.NodeJS.LTS
-  验证：cmd 输入 node -v 显示 v20+
-- 端口占用：cmd 执行 netstat -ano | findstr 27015 → taskkill /PID <PID> /F
-- 卡顿：设置 → 画面 Low
-- 手柄：Chrome/Edge 需授权，地址栏弹“是否允许手柄”点允许
-- 杀毒误报：便携版含 node_modules，已加 SHA256 校验，确定来源可添加信任
+防火墙/网络：
+  - 首次运行放行 UDP 27015-27017（专用+公用都勾）
+  - 网吧/受限网络：用手机热点同网 + 直连 IP 最稳
 
-原始 Electron .exe/.dmg 为壳，完整签名版需在 Windows/macOS CI 以 electron-builder + 证书构建，详见 docs/BUILD_MATRIX.md
-源码：https://github.com/Adamisatree/Iron_Eclipse
+验证：
+  SHA256SUMS.txt 含所有发行文件哈希，PowerShell 执行：
+    Get-FileHash Iron_Eclipse_0.9.0_Windows_Setup.exe -Algorithm SHA256
