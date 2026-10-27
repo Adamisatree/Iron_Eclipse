@@ -1,0 +1,21 @@
+{
+  "name": "iron-eclipse-client",
+  "version": "0.9.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --port 5173",
+    "build": "tsc && vite build",
+    "preview": "vite preview --host 0.0.0.0 --port 4173"
+  },
+  "dependencies": {
+    "howler": "^2.2.4",
+    "nipplejs": "^0.10.1",
+    "three": "^0.160.0"
+  },
+  "devDependencies": {
+    "@types/howler": "^2.2.13",
+    "@types/three": "^0.186.0",
+    "typescript": "^5.4.0",
+    "vite": "^5.2.0"
+  }
+}
